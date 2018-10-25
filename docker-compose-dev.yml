@@ -15,6 +15,9 @@ services:
       - APP_SETTINGS=project.config.DevelopmentConfig
       - DATABASE_URL=postgres://postgres:postgres@users-db:5432/users_dev
       - DATABASE_TEST_URL=postgres://postgres:postgres@users-db:5432/users_test
+      - TRAVIS_JOB_ID=${TRAVIS_JOB_ID}
+      - TRAVIS_BRANCH=${TRAVIS_BRANCH}
+      - COVERALLS_REPO_TOKEN=${COVERALLS_REPO_TOKEN}
     depends_on:
       - users-db
 
@@ -35,5 +38,21 @@ services:
     restart: always
     ports:
       - 80:80
+    depends_on:
+      - users
+      - client
+
+  client:
+    build:
+      context: ./services/client
+      dockerfile: Dockerfile-dev
+    volumes:
+      - './services/client:/usr/src/app'
+      - '/usr/src/app/node_modules'
+    ports:
+      - 3000:3000
+    environment:
+      - NODE_ENV=development
+      - REACT_APP_USERS_SERVICE_URL=${REACT_APP_USERS_SERVICE_URL}
     depends_on:
       - users
